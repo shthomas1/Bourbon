@@ -27,6 +27,11 @@ body {
     background-color: #826442 !important; /* Aged Oak */
     border-color: #6a5235;
   }
+
+  .btn-info {
+    background-color: #826442 !important; /* Aged Oak */
+    border-color: #6a5235;
+  }
   
   .btn-outline-danger {
     color: #ffb03b !important; /* Gold */

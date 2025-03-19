@@ -52,6 +52,17 @@ function populateCarousel(bourbons) {
 function attachButtonHandlers() {
   document.getElementById("btnRegister").addEventListener("click", showRegistrationForm);
   document.getElementById("btnLogin").addEventListener("click", showLoginForm);
+  document.getElementById("btnBlog").addEventListener("click", showBlog);
+}
+
+function showBlog() {
+  const mainContent = document.getElementById("mainContent");
+  mainContent.innerHTML = `
+    <div class="row">
+      <div class="col-md-6 offset-md-3">
+        <h2 class="mb-4">Blog</h2>
+        <p>Coming soon...</p>
+    `
 }
 
 // Check if user is already logged in (stored in localStorage)
@@ -71,10 +82,11 @@ function checkUserSession() {
     // User is NOT logged in: Show Register/Login buttons
     navbar.innerHTML = `
       <button class="btn btn-primary me-2" id="btnRegister">Register</button>
-      <button class="btn btn-success" id="btnLogin">Login</button>
+      <button class="btn btn-success me-2" id="btnLogin">Login</button>
+      <button class="btn btn-primary me-2" id="btnBlog">Blog</button>
     `;
 
-    attachButtonHandlers(); // Ensure the buttons work
+    attachButtonHandlers();
   }
 }
  
@@ -91,10 +103,12 @@ function displayUserGreeting(firstName) {
   navbar.innerHTML = `
     <span class="navbar-text me-3">Hello, ${firstName}!</span>
     <button class="btn btn-outline-danger btn-sm" id="btnLogout">Logout</button>
+    <button class="btn btn-primary" id="btnBlog">Blog</button>
   `;
 
-  // Attach event listener to Logout button
+  // Attach event listeners to buttons
   document.getElementById("btnLogout").addEventListener("click", handleLogout);
+  document.getElementById("btnBlog").addEventListener("click", showBlog);
 }
 
 
@@ -284,11 +298,12 @@ function handleLogout() {
   // Remove the stored user
   localStorage.removeItem("loggedInUser");
 
-  // Restore the login/register buttons
+  // Restore the Nav bar to Buttons
   const navbar = document.getElementById("userNavbar");
   navbar.innerHTML = `
     <button class="btn btn-primary me-2" id="btnRegister">Register</button>
-    <button class="btn btn-success" id="btnLogin">Login</button>
+    <button class="btn btn-success me-2" id="btnLogin">Login</button>
+    <button class="btn btn-primary me-2" id="btnBlog">Blog</button>
   `;
 
   // Reattach event listeners to buttons
