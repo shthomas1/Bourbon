@@ -22,14 +22,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IDbConnection>(sp =>
-    new MySqlConnection(
-        "server=hngomrlb3vfq3jcr.cbetxkdyhwsb.us-east-1.rds.amazonaws.com;" +
-        "database=yep373vb1cf2kgw4;" +
-        "user=igdr2swvcwmsauzw;" +
-        "password=i7vxdcy8tm67omyt;"
-    )
-);
+builder.Services.AddScoped<IDbConnection>(sp =>
+    new MySqlConnection("server=hngomrlb3vfq3jcr.cbetxkdyhwsb.us-east-1.rds.amazonaws.com;" +
+                        "database=yep373vb1cf2kgw4;" +
+                        "user=igdr2swvcwmsauzw;" +
+                        "password=i7vxdcy8tm67omyt;"));
+
 
 var app = builder.Build();
 

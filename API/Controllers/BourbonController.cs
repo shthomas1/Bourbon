@@ -26,7 +26,7 @@ public class BourbonController : ControllerBase
         var bourbons = new List<Bourbon>();
 
         using var command = databaseConnection.CreateCommand();
-        command.CommandText = "SELECT * FROM Bourbon WHERE Deleted = 0";
+        command.CommandText = "SELECT BourbonID, Name, DistilleryID, MashBillID, Proof, FlavorNotes, Age, PhotoUrl, Deleted FROM Bourbon WHERE Deleted = 0";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -40,7 +40,8 @@ public class BourbonController : ControllerBase
                 Proof = reader.GetDecimal(4),
                 FlavorNotes = reader.GetString(5),
                 Age = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                Deleted = reader.GetBoolean(7)
+                PhotoUrl = reader.IsDBNull(7) ? null : reader.GetString(7), // ✅ Includes PhotoUrl
+                Deleted = reader.GetBoolean(8)
             });
         }
         return Ok(bourbons);
@@ -52,8 +53,8 @@ public class BourbonController : ControllerBase
     {
         using var command = databaseConnection.CreateCommand();
         command.CommandText = @"INSERT INTO Bourbon 
-            (Name, DistilleryID, MashBillID, Proof, FlavorNotes, Age, Deleted) 
-            VALUES (@name, @distilleryID, @mashBillID, @proof, @flavorNotes, @age, 0)";
+            (Name, DistilleryID, MashBillID, Proof, FlavorNotes, Age, PhotoUrl, Deleted) 
+            VALUES (@name, @distilleryID, @mashBillID, @proof, @flavorNotes, @age, @photoUrl, 0)";
 
         command.Parameters.Add(new MySqlParameter("@name", newBourbon.Name));
         command.Parameters.Add(new MySqlParameter("@distilleryID", newBourbon.DistilleryID));
@@ -61,6 +62,7 @@ public class BourbonController : ControllerBase
         command.Parameters.Add(new MySqlParameter("@proof", newBourbon.Proof));
         command.Parameters.Add(new MySqlParameter("@flavorNotes", newBourbon.FlavorNotes));
         command.Parameters.Add(new MySqlParameter("@age", (object)newBourbon.Age ?? DBNull.Value));
+        command.Parameters.Add(new MySqlParameter("@photoUrl", (object)newBourbon.PhotoUrl ?? DBNull.Value)); // ✅ Inserts PhotoUrl
 
         command.ExecuteNonQuery();
         return Ok();
@@ -85,7 +87,7 @@ public class BourbonController : ControllerBase
         var bourbons = new List<Bourbon>();
 
         using var command = databaseConnection.CreateCommand();
-        command.CommandText = "SELECT * FROM Bourbon WHERE Deleted = 1";
+        command.CommandText = "SELECT BourbonID, Name, DistilleryID, MashBillID, Proof, FlavorNotes, Age, PhotoUrl, Deleted FROM Bourbon WHERE Deleted = 1";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -99,7 +101,8 @@ public class BourbonController : ControllerBase
                 Proof = reader.GetDecimal(4),
                 FlavorNotes = reader.GetString(5),
                 Age = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                Deleted = reader.GetBoolean(7)
+                PhotoUrl = reader.IsDBNull(7) ? null : reader.GetString(7), // ✅ Includes PhotoUrl
+                Deleted = reader.GetBoolean(8)
             });
         }
         return Ok(bourbons);
@@ -123,7 +126,7 @@ public class BourbonController : ControllerBase
         var bourbons = new List<Bourbon>();
 
         using var command = databaseConnection.CreateCommand();
-        command.CommandText = "SELECT * FROM Bourbon WHERE Deleted = 0 ORDER BY BourbonID ASC";
+        command.CommandText = "SELECT BourbonID, Name, DistilleryID, MashBillID, Proof, FlavorNotes, Age, PhotoUrl, Deleted FROM Bourbon WHERE Deleted = 0 ORDER BY BourbonID ASC";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -137,12 +140,10 @@ public class BourbonController : ControllerBase
                 Proof = reader.GetDecimal(4),
                 FlavorNotes = reader.GetString(5),
                 Age = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                Deleted = reader.GetBoolean(7)
+                PhotoUrl = reader.IsDBNull(7) ? null : reader.GetString(7), // ✅ Includes PhotoUrl
+                Deleted = reader.GetBoolean(8)
             });
         }
         return Ok(bourbons);
     }
 }
-
-
-

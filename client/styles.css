@@ -1,0 +1,63 @@
+/* Bourbon-Themed Colors */
+body {
+    background-color: #2d1e12; /* Dark wood background */
+    color: #f5e1c1; /* Warm cream-colored text */
+  }
+  
+  .navbar {
+    background-color: #5c3c1e !important; /* Bourbon Barrel Brown */
+  }
+  
+  .navbar-brand {
+    color: #f5e1c1 !important; /* Warm cream text */
+    font-weight: bold;
+  }
+  
+  .navbar-text {
+    color: #f5e1c1 !important;
+    font-size: 1.1rem;
+  }
+  
+  .btn-primary {
+    background-color: #c07d48 !important; /* Amber */
+    border-color: #a56a3c;
+  }
+  
+  .btn-success {
+    background-color: #826442 !important; /* Aged Oak */
+    border-color: #6a5235;
+  }
+  
+  .btn-outline-danger {
+    color: #ffb03b !important; /* Gold */
+    border-color: #ffb03b;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #ffb03b !important;
+    color: #2d1e12 !important;
+  }
+  
+  .carousel {
+    background-color: #4a3222; /* Dark Barrel Brown */
+    padding: 15px;
+    border-radius: 10px;
+  }
+  
+  .carousel-inner {
+    background-color: #5c3c1e;
+    border-radius: 8px;
+  }
+  
+  .carousel-item {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .carousel-item h3 {
+    color: #ffcc80; /* Light Bourbon Amber */
+  }
+  
+  .carousel-item p {
+    color: #f5e1c1; /* Warm Cream */
+  }  
