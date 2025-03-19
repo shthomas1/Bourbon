@@ -5,7 +5,7 @@ namespace API.Models
 {
     public class UserService
     {
-        private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
+        private readonly PasswordHasher<User> hasher = new PasswordHasher<User>();
 
         public User CreateUserWithHashedPassword(string email, string firstName, string lastName, string plainTextPassword)
         {
@@ -18,7 +18,7 @@ namespace API.Models
             };
 
             // Generate the hashed password
-            user.PasswordHash = _passwordHasher.HashPassword(user, plainTextPassword);
+            user.PasswordHash = hasher.HashPassword(user, plainTextPassword);
 
             // Save 'user' to the database (e.g., via an EF Core DbContext or raw SQL)
 
@@ -27,7 +27,7 @@ namespace API.Models
 
         public bool VerifyPassword(User user, string plainTextPassword)
         {
-            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, plainTextPassword);
+            var result = hasher.VerifyHashedPassword(user, user.PasswordHash, plainTextPassword);
             return result == PasswordVerificationResult.Success;
         }
     }

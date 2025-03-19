@@ -40,8 +40,8 @@ body {
   
   .carousel {
     background-color: #4a3222; /* Dark Barrel Brown */
-    padding: 15px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 20px;
   }
   
   .carousel-inner {
@@ -51,7 +51,7 @@ body {
   
   .carousel-item {
     text-align: center;
-    padding: 20px;
+    padding: 8px;
   }
   
   .carousel-item h3 {

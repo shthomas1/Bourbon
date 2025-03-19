@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", () => {
   checkUserSession();
 });
 
+document.querySelector(".navbar-brand").addEventListener("click", (event) => {
+  event.preventDefault(); // Prevent default link behavior
+  loadDashboard(); // Loads the bourbon dashboard view
+});
+
+
 // Fetches all bourbons from the server and populates the carousel
 async function loadAllBourbons() {
   try {
