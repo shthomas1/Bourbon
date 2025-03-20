@@ -15,7 +15,10 @@ document.querySelector(".navbar-brand").addEventListener("click", (event) => {
 // Fetches all bourbons from the server and populates the carousel
 async function loadAllBourbons() {
   try {
-    const response = await fetch(`${url}/api/BourbonMaster/all`);
+    const response = await fetch(`${url}/api/BourbonMaster/all`, {
+  method: "GET",
+  credentials: "include", // ✅ Ensures cookies are sent with the request
+});
     const bourbons = await response.json();
     populateCarousel(bourbons);
   } catch (error) {
@@ -25,27 +28,34 @@ async function loadAllBourbons() {
 
 // Populates the carousel with fetched bourbons
 function populateCarousel(bourbons) {
-    const carouselInner = document.getElementById("carousel-inner");
-    if (!carouselInner) return;
+  const carouselInner = document.getElementById("carousel-inner");
+  if (!carouselInner) {
+      console.error("Carousel element not found!");
+      return;
+  }
 
-    carouselInner.innerHTML = "";
+  carouselInner.innerHTML = ""; // Clear existing items
 
-    bourbons.forEach((bourbon, index) => {
-        const item = document.createElement("div");
-        item.className = `carousel-item ${index === 0 ? "active" : ""}`;
-        item.innerHTML = `
-            <div class="d-flex flex-column justify-content-center align-items-center bg-dark text-white p-4" style="height: 350px;">
-                <h3 class="mb-3">${bourbon.name}</h3>
-                <img src="${bourbon.photoUrl || 'https://via.placeholder.com/150'}" alt="${bourbon.name}" 
-                     class="img-fluid mb-2" style="max-height: 150px; border-radius: 8px;">
-                <p class="mb-2"><strong>Proof:</strong> ${bourbon.proof}</p>
-                <p><strong>Notes:</strong> ${bourbon.flavorNotes}</p>
-            </div>
-        `;
+  bourbons.forEach((bourbon, index) => {
+      const item = document.createElement("div");
+      item.className = `carousel-item ${index === 0 ? "active" : ""}`;
+      item.innerHTML = `
+          <div class="d-flex flex-column justify-content-center align-items-center bg-dark text-white p-4" style="height: 350px;">
+              <h3 class="mb-3">${bourbon.name}</h3>
+              <img src="${bourbon.photoUrl || 'https://via.placeholder.com/150'}" alt="${bourbon.name}" 
+                   class="img-fluid mb-2" style="max-height: 150px; border-radius: 8px;">
+              <p class="mb-2"><strong>Proof:</strong> ${bourbon.proof}</p>
+              <p><strong>Notes:</strong> ${bourbon.flavorNotes}</p>
+          </div>
+      `;
 
-        carouselInner.appendChild(item);
-    });
+      carouselInner.appendChild(item);
+  });
+
+  // ✅ Manually reinitialize Bootstrap's carousel (important)
+  new bootstrap.Carousel(document.getElementById("bourbonCarousel"));
 }
+
 
 
 // Attach event handlers for Register and Login buttons
@@ -55,19 +65,149 @@ function attachButtonHandlers() {
   document.getElementById("btnBlog").addEventListener("click", showBlog);
 }
 
-function showBlog() {
+async function showBlog() {
+  const mainContent = document.getElementById("mainContent");
+  const loggedInUser = localStorage.getItem("loggedInUser");
+
+  mainContent.innerHTML = `
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <h2 class="mb-4">Blog</h2>
+        <div id="blogPosts" class="mb-4">Loading...</div>
+        ${loggedInUser ? `<button class="btn btn-primary mb-3" id="btnNewPost">New Post</button>` : ""}
+      </div>
+    </div>
+  `;
+
+  if (loggedInUser) {
+    document.getElementById("btnNewPost").addEventListener("click", showNewPostForm);
+  }
+
+  await loadBlogPosts();
+}
+
+
+// Fetch and display blog posts
+async function loadBlogPosts() {
+  try {
+    const response = await fetch(`${url}/api/Blog`, {
+  method: "GET",
+  credentials: "include", // ✅ Ensures cookies are sent
+});
+    if (!response.ok) throw new Error("Failed to load blogs");
+
+    const blogs = await response.json();
+    const blogContainer = document.getElementById("blogPosts");
+
+    if (!blogs.length) {
+      blogContainer.innerHTML = "<p>No blog posts available.</p>";
+      return;
+    }
+
+    blogContainer.innerHTML = blogs.map(blog => `
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">${blog.title}</h5>
+          <p class="card-text">${blog.content}</p> <!-- Display HTML safely -->
+          <small class="text-muted">Posted on: ${new Date(blog.createdDate).toLocaleString()}</small>
+        </div>
+      </div>
+    `).join("");
+  } catch (error) {
+    console.error("Error loading blog posts:", error);
+    document.getElementById("blogPosts").innerHTML = "<p>Error loading blog posts.</p>";
+  }
+}
+
+
+// Show new post form
+function showNewPostForm() {
   const mainContent = document.getElementById("mainContent");
   mainContent.innerHTML = `
     <div class="row">
       <div class="col-md-6 offset-md-3">
-        <h2 class="mb-4">Blog</h2>
-        <p>Coming soon...</p>
-    `
+        <h2 class="mb-4">Create a Blog Post</h2>
+        <form id="blogForm">
+          <div class="mb-3">
+            <label for="blogTitle" class="form-label">Title</label>
+            <input type="text" class="form-control" id="blogTitle" required />
+          </div>
+          <div class="mb-3">
+            <label for="blogContent" class="form-label">Content</label>
+            <div id="editor-container"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Post</button>
+          <button type="button" class="btn btn-secondary" id="btnCancel">Cancel</button>
+        </form>
+      </div>
+    </div>
+  `;
+  // Initialize Quill editor
+  const quill = new Quill("#editor-container", {
+    theme: "snow",
+    placeholder: "Write your blog post here...",
+    modules: { toolbar: true },
+  });
+
+  document.getElementById("blogForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    handleNewPost(quill.root.innerHTML); // Get formatted content
+  });
+
+  document.getElementById("btnCancel").addEventListener("click", showBlog);
 }
 
+
+// Handle new post submission
+async function handleNewPost(content) {
+  const title = document.getElementById("blogTitle").value.trim();
+  const userId = localStorage.getItem("loggedInUserId"); // Ensure userId exists
+
+  if (!userId) {
+    alert("You must be logged in to post a blog.");
+    return;
+  }
+
+  if (!title || !content) {
+    alert("Title and content cannot be empty.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${url}/api/Blog`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ title, content, UserID: userId }), // ✅ Fix casing to match C# model
+    });
+
+    if (response.status === 400) {
+      const errorText = await response.text();
+      alert("Failed to post blog: " + errorText);
+      return;
+    }
+
+    if (!response.ok) throw new Error("Failed to post blog");
+
+    alert("Blog posted successfully!");
+    showBlog();
+  } catch (error) {
+    console.error("Error posting blog:", error);
+    alert("An error occurred. Please try again.");
+  }
+}
+
+
+
+
+document.getElementById("btnHome").addEventListener("click", (event) => {
+  event.preventDefault();
+  loadDashboard();
+});
+
+
 // Check if user is already logged in (stored in localStorage)
-function checkUserSession() {
-  const userName = localStorage.getItem("loggedInUser");
+async function checkUserSession() {
   const navbar = document.getElementById("userNavbar");
 
   if (!navbar) {
@@ -75,20 +215,35 @@ function checkUserSession() {
     return;
   }
 
-  if (userName) {
-    // User is logged in: Show "Hello, {FirstName}" + Logout button
-    displayUserGreeting(userName);
-  } else {
-    // User is NOT logged in: Show Register/Login buttons
-    navbar.innerHTML = `
-      <button class="btn btn-primary me-2" id="btnRegister">Register</button>
-      <button class="btn btn-success me-2" id="btnLogin">Login</button>
-      <button class="btn btn-primary me-2" id="btnBlog">Blog</button>
-    `;
+  try {
+    const response = await fetch(`${url}/api/Users/current`, {
+      method: "GET",
+      credentials: "include",
+    });
 
-    attachButtonHandlers();
+    if (!response.ok) {
+      console.warn("User not logged in.");
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("loggedInUserId");
+      navbar.innerHTML = `
+        <button class="btn btn-primary me-2" id="btnRegister">Register</button>
+        <button class="btn btn-success me-2" id="btnLogin">Login</button>
+        <button class="btn btn-primary me-2" id="btnBlog">Blog</button>
+      `;
+      attachButtonHandlers();
+      return;
+    }
+
+    const userData = await response.json();
+    localStorage.setItem("loggedInUser", userData.FirstName);
+    localStorage.setItem("loggedInUserId", userData.UserID);
+    displayUserGreeting(userData.FirstName);
+
+  } catch (error) {
+    console.error("Error checking session:", error);
   }
 }
+
  
   
 // Updates the navbar to show "Hello, {FirstName}" instead of Login/Register buttons
@@ -235,30 +390,30 @@ async function handleLoginSubmit(e) {
   try {
     const response = await fetch(`${url}/api/Users/login`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
-      throw new Error("Invalid email or password.");
+      alert("Invalid login credentials. Please try again.");
+      return;
     }
 
     const data = await response.json();
-    const firstName = data.message.replace("Hello, ", "");
 
-    // Store user name in localStorage
-    localStorage.setItem("loggedInUser", firstName);
+    // Save UserID and FirstName separately
+    localStorage.setItem("loggedInUserId", data.userId);
+    localStorage.setItem("loggedInUser", data.firstName);
 
-    // Update navbar immediately
-    displayUserGreeting(firstName);
-
-    // Redirect back to the dashboard
+    displayUserGreeting(data.firstName);
     loadDashboard();
 
   } catch (error) {
     alert(error.message);
   }
 }
+
   
 // Loads the Bourbon dashboard (after login)
 function loadDashboard() {
@@ -294,21 +449,31 @@ function loadDashboard() {
     loadAllBourbons();
   }
 
-function handleLogout() {
-  // Remove the stored user
-  localStorage.removeItem("loggedInUser");
+  function handleLogout() {
+    // ✅ Remove all session-related storage
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("loggedInUserId");
+  
+    // Restore the navbar
+    const navbar = document.getElementById("userNavbar");
+    navbar.innerHTML = `
+      <button class="btn btn-primary me-2" id="btnRegister">Register</button>
+      <button class="btn btn-success me-2" id="btnLogin">Login</button>
+      <button class="btn btn-primary me-2" id="btnBlog">Blog</button>
+    `;
+  
+    // Reattach event listeners to buttons
+    attachButtonHandlers();
+  
+    // ✅ Logout request to backend (important for session clearing)
+  fetch(`${url}/api/Users/logout`, { method: "GET", credentials: "include" })
+  .then(() => {
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("loggedInUserId");
+    displayGuestNavbar();
+    location.reload();
+  })
+  .catch((error) => console.error("Logout error:", error));
 
-  // Restore the Nav bar to Buttons
-  const navbar = document.getElementById("userNavbar");
-  navbar.innerHTML = `
-    <button class="btn btn-primary me-2" id="btnRegister">Register</button>
-    <button class="btn btn-success me-2" id="btnLogin">Login</button>
-    <button class="btn btn-primary me-2" id="btnBlog">Blog</button>
-  `;
-
-  // Reattach event listeners to buttons
-  attachButtonHandlers();
-
-  // Reload the page to reset the state (Optional)
-  location.reload();
-}
+  }
+  
