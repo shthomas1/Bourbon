@@ -45,6 +45,37 @@ public class MashBillsController : ControllerBase
         return Ok(mashBills);
     }
 
+    [HttpGet("{bourbonId}")]
+    public ActionResult<MashBill> GetMashBillByBourbon(int bourbonId)
+    {
+        using var command = databaseConnection.CreateCommand();
+        command.CommandText = @"
+            SELECT mb.* FROM MashBill mb
+            JOIN BourbonMaster b ON mb.MashBillID = b.MashBillID
+            WHERE b.BourbonID = @bourbonId";
+
+        command.Parameters.Add(new MySqlParameter("@bourbonId", bourbonId));
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            var mashBill = new MashBill
+            {
+                MashBillID = reader.GetInt32(0),
+                Name = reader.GetString(1),
+                CornPercentage = reader.GetDecimal(2),
+                RyePercentage = reader.GetDecimal(3),
+                BarleyPercentage = reader.GetDecimal(4),
+                WheatPercentage = reader.IsDBNull(5) ? (decimal?)null : reader.GetDecimal(5),
+                Deleted = reader.GetBoolean(6)
+            };
+            return Ok(mashBill);
+        }
+
+        return NotFound();
+    }
+
+
     [HttpPost]
     public IActionResult AddMashBill([FromBody] MashBill newMashBill)
     {

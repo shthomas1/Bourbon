@@ -66,3 +66,13 @@ body {
   .carousel-item p {
     color: #f5e1c1; /* Warm Cream */
   }  
+
+  .custom-card {
+    background-color: #4a3222 !important; /* Dark barrel wood */
+    color: #f5e1c1 !important;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  

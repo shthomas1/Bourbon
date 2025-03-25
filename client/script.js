@@ -29,31 +29,39 @@ async function loadAllBourbons() {
 // Populates the carousel with fetched bourbons
 function populateCarousel(bourbons) {
   const carouselInner = document.getElementById("carousel-inner");
-  if (!carouselInner) {
-      console.error("Carousel element not found!");
-      return;
-  }
-
-  carouselInner.innerHTML = ""; // Clear existing items
+  carouselInner.innerHTML = "";
 
   bourbons.forEach((bourbon, index) => {
-      const item = document.createElement("div");
-      item.className = `carousel-item ${index === 0 ? "active" : ""}`;
-      item.innerHTML = `
-          <div class="d-flex flex-column justify-content-center align-items-center bg-dark text-white p-4" style="height: 350px;">
-              <h3 class="mb-3">${bourbon.name}</h3>
-              <img src="${bourbon.photoUrl || 'https://via.placeholder.com/150'}" alt="${bourbon.name}" 
-                   class="img-fluid mb-2" style="max-height: 150px; border-radius: 8px;">
-              <p class="mb-2"><strong>Proof:</strong> ${bourbon.proof}</p>
-              <p><strong>Notes:</strong> ${bourbon.flavorNotes}</p>
-          </div>
-      `;
+    const item = document.createElement("div");
+    item.className = `carousel-item ${index === 0 ? "active" : ""}`;
+    item.innerHTML = `
+      <div class="d-flex flex-column justify-content-center align-items-center bg-dark text-white p-4 bourbon-card" 
+           style="height: 350px; cursor: pointer;" 
+           data-bourbon-id="${bourbon.bourbonID}">
+        <h3 class="mb-3">${bourbon.name}</h3>
+        <img src="${bourbon.photoUrl || 'https://via.placeholder.com/150'}" 
+             alt="${bourbon.name}" 
+             class="img-fluid mb-2" style="max-height: 150px; border-radius: 8px;">
+        <p class="mb-2"><strong>Proof:</strong> ${bourbon.proof}</p>
+        <p><strong>Notes:</strong> ${bourbon.flavorNotes}</p>
+      </div>
+    `;
 
-      carouselInner.appendChild(item);
+    carouselInner.appendChild(item);
   });
 
-  // ✅ Manually reinitialize Bootstrap's carousel (important)
+  document.querySelectorAll(".bourbon-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const bourbonID = card.dataset.bourbonId;
+      navigateToBourbonExperience(bourbonID);
+    });
+  });
+
   new bootstrap.Carousel(document.getElementById("bourbonCarousel"));
+}
+
+function navigateToBourbonExperience(bourbonID) {
+  window.location.href = `bourbonExperience.html?bourbonID=${bourbonID}`;
 }
 
 

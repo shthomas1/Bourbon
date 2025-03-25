@@ -40,12 +40,40 @@ public class BourbonController : ControllerBase
                 Proof = reader.GetDecimal(4),
                 FlavorNotes = reader.GetString(5),
                 Age = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
-                PhotoUrl = reader.IsDBNull(7) ? null : reader.GetString(7), // ✅ Includes PhotoUrl
+                PhotoUrl = reader.IsDBNull(7) ? null : reader.GetString(7),
                 Deleted = reader.GetBoolean(8)
             });
         }
         return Ok(bourbons);
     }
+
+    // Retrieve a single bourbon by ID
+    [HttpGet("{id}")]
+    public ActionResult<Bourbon> GetBourbonById(int id)
+    {
+        using var command = databaseConnection.CreateCommand();
+        command.CommandText = "SELECT BourbonID, Name, DistilleryID, MashBillID, Proof, FlavorNotes, Age, PhotoUrl, Deleted FROM Bourbon WHERE BourbonID = @id AND Deleted = 0";
+        command.Parameters.Add(new MySqlParameter("@id", id));
+
+        using var reader = command.ExecuteReader();
+        if (!reader.Read()) return NotFound(); // Returns 404 if bourbon is not found
+
+        var bourbon = new Bourbon
+        {
+            BourbonID = reader.GetInt32(0),
+            Name = reader.GetString(1),
+            DistilleryID = reader.GetInt32(2),
+            MashBillID = reader.IsDBNull(3) ? (int?)null : reader.GetInt32(3),
+            Proof = reader.GetDecimal(4),
+            FlavorNotes = reader.GetString(5),
+            Age = reader.IsDBNull(6) ? (int?)null : reader.GetInt32(6),
+            PhotoUrl = reader.IsDBNull(7) ? null : reader.GetString(7),
+            Deleted = reader.GetBoolean(8)
+        };
+
+        return Ok(bourbon);
+    }
+
 
     // Add a new Bourbon
     [HttpPost]
